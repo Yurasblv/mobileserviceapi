@@ -5,34 +5,18 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ValidationError
 
 
-class CustomUserManager(BaseUserManager):
+class UserManager(BaseUserManager):
     """Base class rewriting"""
 
-    def _create_user(self, username, password, **extra_fields):
-        """Route for continue superuser creation"""
-        user = self.model(username=username, **extra_fields)
-        user.set_password(password)
-        user.save(using=self.db)
-        return user
-
-    def create_user(self, username, phone_number, password, **extra_fields):
-        """Route for continue default user"""
-        extra_fields.setdefault("role", "CUSTOMER")
+    def create_user(self, phone_number, password, **extra_fields):
         extra_fields.setdefault("is_active", True)
-        user = self.model(username=username, phone_number=phone_number, **extra_fields)
+        user = self.model(phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
         return user
 
-    def create_superuser(self, username, password, **extra_fields):
-        """Route for continue superuser"""
+    def create_superuser(self, phone_number, password, **extra_fields):
         extra_fields.setdefault("role", "MASTER")
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValidationError(_("Superuser must have is_staff=True."))
-        if extra_fields.get("is_superuser") is not True:
-            raise ValidationError(_("Superuser must have is_superuser=True."))
-        return self._create_user(username=username, password=password, **extra_fields)
+        return self.create_user(phone_number=phone_number, password=password, **extra_fields)

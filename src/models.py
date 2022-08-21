@@ -3,10 +3,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from src.managers import CustomUserManager
+from src.managers import UserManager
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """
     Refactoring base django user module with separated roles for customer and admin.
     Also in views representing customising authentication with simple_jwt token
@@ -17,29 +17,27 @@ class CustomUser(AbstractUser):
         MASTER = "MASTER", _("MASTER")
 
     role = models.CharField(choices=Roles.choices, default=Roles.CUSTOMER, max_length=8)
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    phone_number = models.CharField(max_length=15, unique=True)
     password = models.CharField(max_length=255, null=False)
-    username = models.CharField(max_length=255, unique=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     last_login = models.DateTimeField(default=timezone.now)
+    username = None
     first_name = None
     last_name = None
     email = None
 
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = "phone_number"
     EMAIL_FIELD = None
 
-    objects = CustomUserManager()
+    objects = UserManager()
 
     class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
 
     def __str__(self):
-        if len(self.username) != 0:
-            return f"{self.role} := {self.username}"
         return f"{self.role} := {self.phone_number}"
 
 
@@ -55,7 +53,7 @@ class Request(models.Model):
     )
     phone_model = models.CharField(max_length=10)
     problem_description = models.TextField(max_length=255)
-    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Invoice(models.Model):

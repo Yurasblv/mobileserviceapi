@@ -12,6 +12,8 @@ black = "==22.6.0"
 djangorestframework-simplejwt = "==5.2.0"
 drf-yasg = "==1.21.3"
 python-dotenv = "==0.20.0"
+django-filter = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
